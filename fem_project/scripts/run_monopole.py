@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.config import AxisymmetricConfig, OutputConfig, um
+from src.export import export_axisymmetric_result_to_vtr
 from src.plotting import (
     plot_axisymmetric_field_map,
     plot_axisymmetric_mesh,
@@ -36,6 +37,7 @@ def main() -> None:
     presentation_dir.mkdir(parents=True, exist_ok=True)
     validation_dir.mkdir(parents=True, exist_ok=True)
     output.data_dir.mkdir(parents=True, exist_ok=True)
+    output.paraview_dir.mkdir(parents=True, exist_ok=True)
 
     config = AxisymmetricConfig()
     result = solve_axisymmetric_lead_field(
@@ -71,6 +73,18 @@ def main() -> None:
         validation_gaps=validation["radial_gaps"],
         validation_numerical=validation["numerical"],
         validation_analytic=validation["analytic"],
+    )
+    export_axisymmetric_result_to_vtr(
+        output.paraview_dir / "level1_axisymmetric_baseline.vtr",
+        result=result,
+        config=config,
+        source_gap=mechanism_source_gap(
+            baseline_gap=config.baseline_gap,
+            displacement_alpha=config.displacement_alpha,
+            t_enc=config.default_t_enc,
+        ),
+        source_current=config.source_current,
+        z_source=config.z_source,
     )
 
     save_figure(

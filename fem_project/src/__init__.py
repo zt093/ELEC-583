@@ -6,6 +6,7 @@ from .config import (
     MechanismSweepConfig,
     OutputConfig,
 )
+from .export import export_axisymmetric_result_to_vtr, export_cartesian_result_to_vti
 from .geometry import build_axisymmetric_grid, build_cartesian_grid
 from .materials import build_axisymmetric_conductivity, build_cartesian_conductivity
 from .postprocess import evaluate_axisymmetric_recording, sample_surface_average
@@ -15,6 +16,8 @@ from .sources import DipoleSource, MonopoleSource, PointCurrentSource, morpholog
 __all__ = [
     "AxisymmetricConfig",
     "Cartesian3DConfig",
+    "export_axisymmetric_result_to_vtr",
+    "export_cartesian_result_to_vti",
     "MechanismSweepConfig",
     "OutputConfig",
     "DipoleSource",

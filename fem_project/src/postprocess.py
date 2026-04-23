@@ -1,4 +1,4 @@
-"""Recording metrics, mechanism separation, and validation utilities."""
+"""Recording metrics, stage-aware electrode sampling, and validation utilities."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from .config import AxisymmetricConfig, Cartesian3DConfig, MechanismSweepConfig
+from .electrodes import ElectrodeLayout, ElectrodeSite
 from .solver import AxisymmetricLeadFieldResult, CartesianPotentialResult, solve_axisymmetric_lead_field
 
 
@@ -309,6 +310,23 @@ def surface_sample_points(
     return np.asarray(points, dtype=float)
 
 
+def surface_sample_points_for_site(
+    config: Cartesian3DConfig,
+    site: ElectrodeSite,
+    n_theta: int = 25,
+    n_z: int = 25,
+) -> np.ndarray:
+    theta = np.linspace(site.azimuth - 0.5 * site.arc, site.azimuth + 0.5 * site.arc, n_theta)
+    z_values = np.linspace(site.z_center - 0.5 * site.height, site.z_center + 0.5 * site.height, n_z)
+    points = []
+    for angle in theta:
+        x = config.probe_radius * np.cos(angle)
+        y = config.probe_radius * np.sin(angle)
+        for z in z_values:
+            points.append([x, y, z])
+    return np.asarray(points, dtype=float)
+
+
 def sample_surface_average(
     result: CartesianPotentialResult,
     config: Cartesian3DConfig,
@@ -331,3 +349,47 @@ def sample_surface_average(
         ]
     )
     return float(np.mean(values))
+
+
+def sample_site_average(
+    result: CartesianPotentialResult,
+    config: Cartesian3DConfig,
+    site: ElectrodeSite,
+    n_theta: int = 21,
+    n_z: int = 21,
+) -> float:
+    samples = surface_sample_points_for_site(config=config, site=site, n_theta=n_theta, n_z=n_z)
+    values = np.array(
+        [
+            _trilinear_sample(
+                result.grid.x,
+                result.grid.y,
+                result.grid.z,
+                result.potential,
+                point[0],
+                point[1],
+                point[2],
+            )
+            for point in samples
+        ]
+    )
+    return float(np.mean(values))
+
+
+def sample_layout_recordings(
+    result: CartesianPotentialResult,
+    config: Cartesian3DConfig,
+    layout: ElectrodeLayout,
+    n_theta: int = 21,
+    n_z: int = 21,
+) -> dict[str, float]:
+    return {
+        site.name: sample_site_average(
+            result=result,
+            config=config,
+            site=site,
+            n_theta=n_theta,
+            n_z=n_z,
+        )
+        for site in layout.sites
+    }

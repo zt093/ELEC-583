@@ -14,6 +14,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.config import Cartesian3DConfig, OutputConfig
+from src.export import export_cartesian_result_to_vti
 from src.plotting import plot_3d_slice_view, save_figure
 from src.postprocess import sample_surface_average
 from src.solver import solve_cartesian_potential
@@ -25,6 +26,7 @@ def main() -> None:
     presentation_dir = output.figures_dir / "presentation"
     presentation_dir.mkdir(parents=True, exist_ok=True)
     output.data_dir.mkdir(parents=True, exist_ok=True)
+    output.paraview_dir.mkdir(parents=True, exist_ok=True)
 
     config = Cartesian3DConfig()
     points = morphology_placeholder(
@@ -47,6 +49,11 @@ def main() -> None:
         z=result.grid.z,
         potential=result.potential,
         phi_elec=phi_elec,
+    )
+    export_cartesian_result_to_vti(
+        output.paraview_dir / "level3_morphology_placeholder.vti",
+        result=result,
+        config=config,
     )
     save_figure(
         plot_3d_slice_view(result=result, config=config),

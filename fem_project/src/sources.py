@@ -18,11 +18,21 @@ class PointCurrentSource:
 @dataclass(frozen=True)
 class MonopoleSource:
     radial_gap: float
+    azimuth: float = 0.0
     z: float = 0.0
     current: float = 1e-9
 
     def radial_position(self, probe_radius: float) -> float:
         return probe_radius + self.radial_gap
+
+    def point_source(self, probe_radius: float) -> PointCurrentSource:
+        radius = self.radial_position(probe_radius)
+        return PointCurrentSource(
+            x=float(radius * np.cos(self.azimuth)),
+            y=float(radius * np.sin(self.azimuth)),
+            z=float(self.z),
+            current=float(self.current),
+        )
 
 
 @dataclass(frozen=True)

@@ -18,10 +18,12 @@ class OutputConfig:
     project_root: Path = Path(__file__).resolve().parents[1]
     figures_dir: Path = field(init=False)
     data_dir: Path = field(init=False)
+    paraview_dir: Path = field(init=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "figures_dir", self.project_root / "outputs" / "figures")
         object.__setattr__(self, "data_dir", self.project_root / "outputs" / "data")
+        object.__setattr__(self, "paraview_dir", self.project_root / "outputs" / "paraview")
 
 
 @dataclass(frozen=True)
@@ -55,6 +57,10 @@ class Cartesian3DConfig:
     ny: int = 41
     nz: int = 69
     source_current: float = 1e-9
+    monopole_baseline_gap: float = um(30.0)
+    monopole_displacement_alpha: float = 0.6
+    monopole_azimuth: float = 0.0
+    monopole_z: float = 0.0
     dipole_separation: float = um(20.0)
     dipole_center_radius: float = um(70.0)
     dipole_center_z: float = 0.0
